@@ -438,7 +438,8 @@ function HeaderComponent(props: Props): JSX.Element {
         <Layout.Header className='cvat-header'>
             <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
             <div className='cvat-left-header'>
-                <Icon className='cvat-logo-icon' component={CVATLogo} />
+                {/* <Icon className='cvat-logo-icon' component={CVATLogo} /> */}
+                <img src="https://agentx-demo-staticweb.hgsdigital.com/images/finance/HGS-Aug-AgentX_DkGrey.svg" alt="HGS" width="100px" />
                 <Button
                     className={getButtonClassName('projects')}
                     type='link'
