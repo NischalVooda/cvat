@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { Row, Col } from 'antd/lib/grid';
 import { MenuProps } from 'antd/lib/menu';
-import {
+import Icon, {
     SettingOutlined,
     InfoCircleOutlined,
     EditOutlined,
@@ -34,7 +34,7 @@ import notification from 'antd/lib/notification';
 import config from 'config';
 
 import { Organization, getCore } from 'cvat-core-wrapper';
-// import { CVATLogo } from 'icons';
+import { CVATLogo } from 'icons';
 import ChangePasswordDialog from 'components/change-password-modal/change-password-modal';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import { switchSettingsModalVisible as switchSettingsModalVisibleAction } from 'actions/settings-actions';
@@ -439,7 +439,7 @@ function HeaderComponent(props: Props): JSX.Element {
             <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
             <div className='cvat-left-header'>
                 {/* <Icon className='cvat-logo-icon' component={CVATLogo} /> */}
-                <img src='https://raw.githubusercontent.com/NischalVooda/cvat/85c05dee85e84554e653c2032f615a1d36ada3ba/cvat-ui/src/assets/cvat-logo.svg' alt='HGS' width='100px' />
+                <img src="https://raw.githubusercontent.com/NischalVooda/cvat/85c05dee85e84554e653c2032f615a1d36ada3ba/cvat-ui/src/assets/cvat-logo.svg" alt="HGS" width="100px" />
                 <Button
                     className={getButtonClassName('projects')}
                     type='link'
