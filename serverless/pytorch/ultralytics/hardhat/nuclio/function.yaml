@@ -1,0 +1,65 @@
+metadata:
+  name: custom-yolo-model
+  namespace: cvat
+  annotations:
+    name: Custom YOLO Model
+    type: detector
+    framework: pytorch
+    spec: |
+      [
+        { "id": 0, "name": "Hardhat", "type": "rectangle" },
+        { "id": 1, "name": "Mask", "type": "rectangle" },
+        { "id": 2, "name": "NO-Hardhat", "type": "rectangle" },
+        { "id": 3, "name": "NO-Mask", "type": "rectangle" },
+        { "id": 4, "name": "No-Vest", "type": "rectangle" },
+        { "id": 5, "name": "Worker", "type": "rectangle" },
+        { "id": 6, "name": "Safety Cone", "type": "rectangle" },
+        { "id": 7, "name": "Safety Vest", "type": "rectangle" },
+        { "id": 8, "name": "machinery", "type": "rectangle" },
+        { "id": 9, "name": "vehicle", "type": "rectangle" }
+      ]
+
+spec:
+  description: Custom YOLO Model for detecting safety gear and objects
+  runtime: 'python:3.8'
+  handler: main:handler
+  eventTimeout: 30s
+
+  build:
+    path: . # Path to your function code
+    baseImage: ultralytics/ultralytics
+    directives:
+      preCopy:
+        - kind: USER
+          value: root
+      - kind: ENV
+        value: NVIDIA_VISIBLE_DEVICES=all
+      - kind: ENV
+        value: NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - kind: ENV
+        value: RUN_ON_GPU="false"
+      - kind: RUN
+        value: export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y python-is-python3
+      - kind: RUN
+        value: pip install --no-cache-dir opencv-python-headless pillow numpy
+      - kind: RUN
+        value: pip uninstall -y torch torchvision torchaudio
+      - kind: RUN
+        value: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+      - kind: WORKDIR
+        value: /opt/nuclio
+
+  triggers:
+    myHttpTrigger:
+      maxWorkers: 1
+      kind: 'http'
+      workerAvailabilityTimeoutMilliseconds: 10000
+      attributes:
+        maxRequestBodySize: 33554432 # 32MB
+
+  platform:
+    attributes:
+      restartPolicy:
+        name: always
+        maximumRetryCount: 3
+      mountMode: volume

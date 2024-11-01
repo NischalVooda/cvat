@@ -1,0 +1,86 @@
+# This file configures the CPU serverless function
+metadata:
+  name: pth-ultralytics-yolov8 # Name of the serverless function (displayed in nuclio)
+  namespace: cvat # Isolation level (displayed in Nuclio)
+  annotations:
+    name: YOLOv8 by Ultralytics # The display name inside of CVAT
+    type: detector
+    framework: pytorch
+    spec: |
+      [
+        { "id": 0, "name": "unlabeled", "type": "mask" },
+        { "id": 1, "name": "road", "type": "mask" },
+        { "id": 2, "name": "dirt", "type": "mask" },
+        { "id": 3, "name": "gravel", "type": "mask" },
+        { "id": 4, "name": "rock", "type": "mask" },
+        { "id": 5, "name": "grass", "type": "mask" },
+        { "id": 6, "name": "vegetation", "type": "mask" },
+        { "id": 7, "name": "tree", "type": "mask" },
+        { "id": 8, "name": "obstacle", "type": "mask" },
+        { "id": 9, "name": "animals", "type": "mask" },
+        { "id": 10, "name": "person", "type": "mask" },
+        { "id": 11, "name": "bicycle", "type": "mask" },
+        { "id": 12, "name": "vehicle", "type": "mask" },
+        { "id": 13, "name": "water", "type": "mask" },
+        { "id": 14, "name": "boat", "type": "mask" },
+        { "id": 15, "name": "wall (building)", "type": "mask" },
+        { "id": 16, "name": "roof", "type": "mask" },
+        { "id": 17, "name": "sky", "type": "mask" },
+        { "id": 18, "name": "drone", "type": "mask" },
+        { "id": 19, "name": "train-track", "type": "mask" },
+        { "id": 20, "name": "power-cable", "type": "mask" },
+        { "id": 21, "name": "power-cable-tower", "type": "mask" },
+        { "id": 22, "name": "wind-turbine-blade", "type": "mask" },
+        { "id": 23, "name": "wind-turbine-tower", "type": "mask" }
+      ]
+
+spec:
+  description: YOLOv8 by Ultralytics
+  runtime: 'python:3.8' # Runtime Langauge (default: python:3.6)
+  handler: main:handler # Entry point to the serverless function
+  eventTimeout: 30s
+
+  build:
+    image: cvat.pth.fraunhofer.uam_upernet # Docker image name
+    baseImage: ultralytics/ultralytics # The base container on which the serverless function is to be built
+
+    directives:
+      preCopy:
+        - kind: USER
+          value: root
+      # set NVIDIA container runtime settings
+        - kind: ENV
+          value: NVIDIA_VISIBLE_DEVICES=all
+        - kind: ENV
+          value: NVIDIA_DRIVER_CAPABILITIES=compute,utility
+        - kind: ENV
+          value: RUN_ON_GPU="false"
+        # Ensure Python is mapped to Python3
+        - kind: RUN
+          value: export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y python-is-python3
+        # Install required Python requirements
+        - kind: RUN
+          value: pip install --no-cache-dir opencv-python-headless pillow pyyaml
+        - kind: RUN
+          value: pip uninstall -y torch torchvision torchaudio
+        - kind: RUN
+          value: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+        - kind: WORKDIR
+          value: /opt/nuclio
+
+  # Parameters to handle incoming HTTP requests
+  triggers:
+    myHttpTrigger:
+      maxWorkers: 1
+      kind: 'http'
+      workerAvailabilityTimeoutMilliseconds: 10000
+      attributes:
+        maxRequestBodySize: 33554432 # 32MB
+
+ # Further required parameters to run the function
+  platform:
+    attributes:
+      restartPolicy:
+        name: always
+        maximumRetryCount: 3
+      mountMode: volume
